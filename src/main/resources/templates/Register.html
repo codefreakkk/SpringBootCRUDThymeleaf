@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+</head>
+<body>
+<!--th:object=logindata-->
+    <div class="container mt-5" style="width: 50%">
+        <form>
+            <div class="mb-3">
+                <input type="text" placeholder="name" class="form-control" id="name" name="name" aria-describedby="emailHelp">
+            </div>
+            <div class="mb-3">
+                <input type="text" placeholder="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
+            </div>
+            <div class="mb-3">
+                <input type="password" placeholder="password" class="form-control" name="password" id="password">
+            </div>
+<!--            <div class="mb-3 form-check">-->
+<!--                <input type="checkbox" class="form-check-input" id="exampleCheck1">-->
+<!--                <label class="form-check-label" for="exampleCheck1">Accept terms and conditions</label>-->
+<!--            </div>-->
+            <button type="button" id="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <div class="mt-5">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Password</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Update</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            getData();
+
+            // ajax call for registration
+            $("#submit").on("click", function () {
+                $.ajax({
+                    url: "http://localhost:8080/process",
+                    contentType : "application/json",
+                    method: "POST",
+                    dataType : 'json',
+                    data: JSON.stringify({
+                        name: $("#name").val(),
+                        email: $("#email").val(),
+                        password: $("#password").val()
+                    }),
+                    success: function (data) {
+                        getData();
+                        $("#name").val(""),
+                         $("#email").val(""),
+                            $("#password").val("")
+                        console.log(data)
+                    },
+                    error: function(e) {
+                        console.log(e)
+                    }
+                })
+            })
+
+
+            // delete user
+            $(document).on('click', '#deleteUser', function () {
+                let id = $(this).data("id");
+                $.ajax({
+                    url: "http://localhost:8080/deleteuser",
+                    contentType: "application/json",
+                    method: "DELETE",
+                    dataType: "json",
+                    data: {id: id} ,
+                    success: function(data) {
+                        console.log(data);
+                        getData();
+                    },
+                    error: function (data) {
+                        alert("Some error occured")
+                        console.log(data);
+                    }
+                })
+            })
+
+
+            // get all data
+            function getData() {
+                $.ajax({
+                    url: "http://localhost:8080/getusers",
+                    contentType: "application/json",
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        let htmlData = '';
+                        data.map((d) => {
+                            htmlData +=  `
+                                 <tr>
+                                      <th scope="row">${d.id}</th>
+                                      <td>${d.name}</td>
+                                      <td>${d.email}</td>
+                                      <td>${d.password}</td>
+                                      <td data-id='${d.id}' id="deleteUser" style="cursor: pointer;">del</td>
+                                        <td style="cursor: pointer;"><a href="update/${d.id}">U</a></td>
+                                </tr>
+                            `;
+                        })
+
+                        $("#tbody").html(htmlData);
+                    }
+                })
+            }
+
+
+        })
+    </script>
+
+</body>
+</html>
